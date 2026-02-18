@@ -1,3 +1,5 @@
+//! PpmImage is a structure that represents a PPM image - it contains the metadata, 
+//! and image data if the file is a valid P6 PPM.  
 
 #[derive(Clone, Debug)]
 pub struct PpmImage {
@@ -22,7 +24,8 @@ impl PpmImage {
             image_data: None,
         }
     }
-
+    
+    /// Check if the two "magic number" bytes are a valid "P6" 
     pub fn is_valid_ppm(magic_vec: &[u8]) -> bool {
         if magic_vec.len() != 2 {
             return false;

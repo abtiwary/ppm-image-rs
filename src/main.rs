@@ -1,4 +1,8 @@
-use anyhow::{Result, anyhow};
+//! A command line application to either read a valid P6 PPM file and show the image in a window; 
+//! or, write a test gradient image at a specified location - both using the reader and writer from
+//! this crate. 
+
+use anyhow::{anyhow, Context, Result};
 use clap::{Parser, Subcommand};
 use show_image::{ImageView, ImageInfo, event, create_window};
 
@@ -22,7 +26,7 @@ enum Commands {
     
     /// Write a PPM file 
     WriteGradient {
-        /// path to a P6 ppm file 
+        /// path to write the  P6 ppm file to 
         #[arg(short, long, default_value="")]
         file_path: String, 
     },
@@ -36,6 +40,7 @@ fn main() -> Result<()> {
     match &cli.command {
         Commands::Read { file_path } => {
             if file_path.is_empty() {
+                eprintln!("expected a non-empty path to a valid P6 PPM file!");
                 return Err(anyhow!("expected a path to a valid P6 ppm file"));
             }
 
@@ -60,7 +65,6 @@ fn main() -> Result<()> {
                     }
                 }
             }
-
         },
 
         Commands::WriteGradient { file_path } => {
@@ -92,7 +96,7 @@ fn main() -> Result<()> {
 
             let mut writer = PpmWriter::new(width as usize, height as usize, 255, &file_path.clone());
             writer.set_image_data(&gradient_image_data);
-            writer.write_output_file()?;
+            writer.write_output_file().context("error writing the output PPM file")?;
             println!("wrote a P6 PPM file, with a gradient, to: {:?}", &file_path);
         },
     }
