@@ -7,6 +7,8 @@ pub enum PpmError {
 
     #[error("file i/o error: could not read {0}, error = {1}")]
     FileIO(String, String),
-
+    
+    #[error("image data not set")]
+    InvalidImageData,
 }
 
