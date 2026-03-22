@@ -6,7 +6,7 @@ use anyhow::{anyhow, Context, Result};
 use clap::{Parser, Subcommand};
 use show_image::{ImageView, ImageInfo, event, create_window};
 
-use ppm_image_rs::ppm::{reader::PpmReader, writer::PpmWriter};
+use ppm_image_rs::ppm::{reader::PpmReader, writer::{PpmWriter, RgbColor}};
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -75,9 +75,12 @@ fn main() -> Result<()> {
     
             let width: u16 = 200;
             let height: u16 = 100; 
-            // generate some image data - in this case a 200x100 gradient
-            let mut gradient_image_data: Vec<u8> = vec![0; 3 * width as usize * height as usize];
-            let mut gradient_image_data_idx = 0;
+            let data_size: usize = 200 * 100 * 3;
+            
+            let mut writer = PpmWriter::new(width as usize, height as usize, 255, &file_path.clone());
+            writer.set_empty_image_data(data_size);
+
+            // generate some image content - in this case a 200x100 gradient
             for y in (0..height).rev() {
                 for x in 0..width {
                     let r: f32 = f32::from(x) / f32::from(width);
@@ -86,16 +89,13 @@ fn main() -> Result<()> {
                     let ir: u8 = (255.99 * r) as u8;
                     let ig: u8 = (255.99 * g) as u8;
                     let ib: u8 = (255.99 * b) as u8;
-
-                    gradient_image_data[gradient_image_data_idx] = ir;
-                    gradient_image_data[gradient_image_data_idx+1] = ig;
-                    gradient_image_data[gradient_image_data_idx+2] = ib;
-                    gradient_image_data_idx += 3;
+                    
+                    writer.set_rgb_at_coordinate(RgbColor{
+                        r: ir, g: ig, b: ib,
+                    }, x as usize, y as usize);
                 }
             }
 
-            let mut writer = PpmWriter::new(width as usize, height as usize, 255, &file_path.clone());
-            writer.set_image_data(&gradient_image_data);
             writer.write_output_file().context("error writing the output PPM file")?;
             println!("wrote a P6 PPM file, with a gradient, to: {:?}", &file_path);
         },

@@ -6,6 +6,13 @@ use crate::ppm::ppm_image::PpmImage;
 use crate::ppm::errors::PpmError;
 use std::io::Write;
 
+#[derive(Clone, Copy, Default)]
+pub struct RgbColor {
+    pub r: u8,
+    pub g: u8,
+    pub b: u8
+}
+
 #[derive(Clone, Debug, Default)]
 pub struct PpmWriter {
     pub ppm_image: PpmImage,
@@ -24,6 +31,22 @@ impl PpmWriter {
         ppm_writer.ppm_image.bit_depth = bit_depth;
 
         ppm_writer
+    }
+
+    /// Copy a given slice of bytes into the image_data container of the PpmImage.  
+    pub fn set_empty_image_data(&mut self, data_size: usize) {
+        let image_data = vec![0; data_size];
+        self.ppm_image.image_data = Some(image_data);
+    }
+
+    pub fn set_rgb_at_coordinate(&mut self, rgb_color: RgbColor, x: usize, y: usize) {
+        if let Some(image_data) = &mut self.ppm_image.image_data {
+            let idx = 3 * ((y * self.ppm_image.width) + x);
+
+            image_data[idx+0] = rgb_color.r;
+            image_data[idx+1] = rgb_color.g;
+            image_data[idx+2] = rgb_color.b;
+        }
     }
 
     /// Copy a given slice of bytes into the image_data container of the PpmImage.  
